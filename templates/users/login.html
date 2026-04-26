@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Login | WorkTime{% endblock %}
+
+{% block content %}
+<section class="auth-wrap">
+    <div class="auth-panel">
+        <div class="auth-intro">
+            <span class="eyebrow">Welcome back</span>
+            <h1>Login</h1>
+            <p>Продолжайте учет рабочего времени, отслеживайте задачи и смотрите отчеты по команде в одном интерфейсе.</p>
+            <div class="auth-bullets">
+                <span>Task tracking</span>
+                <span>Live timer</span>
+                <span>Weekly reports</span>
+            </div>
+        </div>
+        <div class="auth-card">
+            <form method="post" class="form-card">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                {% for field in form %}
+                    <label class="field">
+                        <span>{{ field.label }}</span>
+                        {{ field }}
+                        {{ field.errors }}
+                    </label>
+                {% endfor %}
+                <button class="button" type="submit">Login</button>
+            </form>
+            <p>Нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться</a></p>
+        </div>
+    </div>
+</section>
+{% endblock %}

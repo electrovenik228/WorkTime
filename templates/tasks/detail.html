@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}{{ task.title }} | WorkTime{% endblock %}
+
+{% block content %}
+<section class="page-head">
+    <div>
+        <span class="eyebrow">Task detail</span>
+        <h1>{{ task.title }}</h1>
+        <p>{{ task.description|default:"No description" }}</p>
+    </div>
+    <div class="card-actions">
+        <button class="button timer-action" data-action="start" data-task-id="{{ task.pk }}">Start</button>
+        <button class="button danger timer-action" data-action="stop" data-task-id="{{ task.pk }}">Stop</button>
+    </div>
+</section>
+
+<section class="detail-grid">
+    <article class="panel">
+        <div class="panel-header">
+            <h2>Details</h2>
+        </div>
+        <div class="detail-list">
+            <div><span>Status</span><strong class="inline-status" data-status="{{ task.status }}">{{ task.get_status_display }}</strong></div>
+            <div><span>Created by</span><strong>{{ task.created_by.username }}</strong></div>
+            <div><span>Assigned to</span><strong>{{ task.assigned_to.username }}</strong></div>
+            <div><span>Created at</span><strong>{{ task.created_at|date:"d.m.Y H:i" }}</strong></div>
+        </div>
+    </article>
+
+    <article class="panel">
+        <div class="panel-header">
+            <h2>Edit task</h2>
+        </div>
+        <form method="post" class="form-card">
+            {% csrf_token %}
+            {% for field in form %}
+                <label class="field">
+                    <span>{{ field.label }}</span>
+                    {{ field }}
+                    {{ field.errors }}
+                </label>
+            {% endfor %}
+            <button class="button" type="submit">Save changes</button>
+        </form>
+    </article>
+
+    <article class="panel">
+        <div class="panel-header">
+            <h2>Time entries</h2>
+        </div>
+        <div class="task-stack">
+            {% for entry in entries %}
+                <div class="task-row static">
+                    <div>
+                        <strong>{{ entry.user.username }}</strong>
+                        <p>{{ entry.start_time|date:"d.m.Y H:i" }}{% if entry.end_time %} - {{ entry.end_time|date:"d.m.Y H:i" }}{% endif %}</p>
+                    </div>
+                    <span class="badge">{{ entry.duration }}</span>
+                </div>
+            {% empty %}
+                <p class="empty-state">No time entries for this task yet.</p>
+            {% endfor %}
+        </div>
+    </article>
+</section>
+{% endblock %}

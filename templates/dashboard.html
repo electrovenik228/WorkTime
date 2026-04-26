@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | WorkTime{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-copy">
+        <span class="eyebrow">Time Tracking System</span>
+        <h1>Контролируйте задачи и рабочее время без перегрузки интерфейса.</h1>
+        <p>Панель показывает активный таймер, прогресс по задачам и ключевые показатели по команде.</p>
+        <div class="hero-actions">
+            <a class="button" href="{% url 'task-list' %}">Open tasks</a>
+            <a class="button secondary" href="{% url 'reports' %}">Open reports</a>
+        </div>
+    </div>
+    {% if active_entry %}
+        <div class="hero-timer timer-card" data-start-time="{{ active_entry.start_time|date:'c' }}">
+            <span class="eyebrow">Active timer</span>
+            <strong>{{ active_entry.task.title }}</strong>
+            <div class="timer-value" data-timer-display>{{ active_entry.duration }}</div>
+            <button class="button danger timer-action" data-action="stop" data-task-id="{{ active_entry.task_id }}">Stop</button>
+        </div>
+    {% else %}
+        <div class="hero-timer hero-empty">
+            <span class="eyebrow">Ready to track</span>
+            <strong>No active timer</strong>
+            <p>Start tracking from the task list or a task detail page.</p>
+            <a class="button" href="{% url 'task-list' %}">Choose a task</a>
+        </div>
+    {% endif %}
+</section>
+
+<section class="stats-grid">
+    <article class="stat-card"><span>Total tasks</span><strong>{{ stats.tasks_total }}</strong><p>All visible assignments</p></article>
+    <article class="stat-card"><span>In progress</span><strong>{{ stats.tasks_in_progress }}</strong><p>Currently active work</p></article>
+    <article class="stat-card"><span>Done</span><strong>{{ stats.tasks_done }}</strong><p>Completed items</p></article>
+    <article class="stat-card"><span>My hours</span><strong>{{ stats.hours_logged }}</strong><p>Tracked work hours</p></article>
+</section>
+
+<section class="content-grid">
+    <article class="panel">
+        <div class="panel-header">
+            <h2>Recent tasks</h2>
+            <a href="{% url 'task-list' %}">View all</a>
+        </div>
+        <div class="task-stack">
+            {% for task in recent_tasks %}
+                <a class="task-row" data-status="{{ task.status }}" href="{% url 'task-detail' task.pk %}">
+                    <div>
+                        <strong>{{ task.title }}</strong>
+                        <p>{{ task.description|default:"No description" }}</p>
+                    </div>
+                    <span class="badge status-badge">{{ task.get_status_display }}</span>
+                </a>
+            {% empty %}
+                <p class="empty-state">Tasks will appear here after creation.</p>
+            {% endfor %}
+        </div>
+    </article>
+
+    {% if request.user.role == "manager" %}
+        <article class="panel">
+            <div class="panel-header">
+                <h2>Team overview</h2>
+            </div>
+            <div class="task-stack">
+                {% for member in team_overview %}
+                    <div class="task-row static">
+                        <div>
+                            <strong>{{ member.username }}</strong>
+                            <p>{{ member.email }}</p>
+                        </div>
+                        <span class="badge">{{ member.task_count }} tasks</span>
+                    </div>
+                {% empty %}
+                    <p class="empty-state">No team data yet.</p>
+                {% endfor %}
+            </div>
+        </article>
+    {% endif %}
+</section>
+{% endblock %}

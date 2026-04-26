@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Tasks | WorkTime{% endblock %}
+
+{% block content %}
+<section class="page-head">
+    <div>
+        <span class="eyebrow">Tasks</span>
+        <h1>Список задач</h1>
+        <p>Управляйте очередью задач, быстро находите нужные элементы и запускайте трекинг прямо из карточек.</p>
+    </div>
+    <form method="get" class="toolbar">
+        <input type="text" name="search" value="{{ request.GET.search }}" placeholder="Search tasks">
+        <select name="status">
+            <option value="">All statuses</option>
+            {% for value, label in statuses %}
+                <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <button class="button secondary" type="submit">Filter</button>
+    </form>
+</section>
+
+<section class="content-grid">
+    <article class="panel">
+        <div class="panel-header">
+            <h2>Create task</h2>
+        </div>
+        <form method="post" class="form-card">
+            {% csrf_token %}
+            {% for field in form %}
+                <label class="field">
+                    <span>{{ field.label }}</span>
+                    {{ field }}
+                    {{ field.errors }}
+                </label>
+            {% endfor %}
+            <button class="button" type="submit">Create</button>
+        </form>
+    </article>
+
+    <article class="panel">
+        <div class="panel-header">
+            <h2>Tasks</h2>
+        </div>
+        <div class="cards-grid">
+            {% for task in tasks %}
+                <article class="task-card" data-status="{{ task.status }}">
+                    <div class="task-card-head">
+                        <span class="badge status-badge">{{ task.get_status_display }}</span>
+                        <span class="muted">{{ task.created_at|date:"d.m.Y H:i" }}</span>
+                    </div>
+                    <h3>{{ task.title }}</h3>
+                    <p>{{ task.description|default:"No description" }}</p>
+                    <div class="meta-grid">
+                        <span class="meta-pill">Assigned: {{ task.assigned_to.username }}</span>
+                        <span class="meta-pill">Author: {{ task.created_by.username }}</span>
+                    </div>
+                    <div class="card-actions">
+                        <a class="button secondary" href="{% url 'task-detail' task.pk %}">Open</a>
+                        <button class="button timer-action" data-action="start" data-task-id="{{ task.pk }}">Start</button>
+                        <button class="button danger timer-action" data-action="stop" data-task-id="{{ task.pk }}">Stop</button>
+                    </div>
+                </article>
+            {% empty %}
+                <p class="empty-state">No tasks match the current filter.</p>
+            {% endfor %}
+        </div>
+        {% if is_paginated %}
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}&search={{ request.GET.search }}&status={{ request.GET.status }}">Previous</a>
+                {% endif %}
+                <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}&search={{ request.GET.search }}&status={{ request.GET.status }}">Next</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </article>
+</section>
+{% endblock %}

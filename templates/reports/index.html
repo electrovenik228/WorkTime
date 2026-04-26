@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Reports | WorkTime{% endblock %}
+
+{% block content %}
+<section class="page-head">
+    <div>
+        <span class="eyebrow">Reports</span>
+        <h1>Дневная и недельная аналитика</h1>
+        <p>Сводка по затраченному времени с фильтрами и быстрым экспортом для менеджера или сотрудника.</p>
+    </div>
+    <form method="get" class="toolbar">
+        <input type="date" name="date" value="{{ report_date|date:'Y-m-d' }}">
+        {% if request.user.role == "manager" %}
+            <select name="user_id">
+                <option value="">All users</option>
+                {% for member in team_members %}
+                    <option value="{{ member.id }}" {% if selected_user.id == member.id %}selected{% endif %}>{{ member.username }}</option>
+                {% endfor %}
+            </select>
+        {% endif %}
+        <button class="button secondary" type="submit">Apply</button>
+        <a class="button secondary" href="/api/reports/daily/export/?date={{ report_date|date:'Y-m-d' }}{% if request.GET.user_id %}&user_id={{ request.GET.user_id }}{% endif %}">Export daily CSV</a>
+        <a class="button secondary" href="/api/reports/weekly/export/?date={{ report_date|date:'Y-m-d' }}{% if request.GET.user_id %}&user_id={{ request.GET.user_id }}{% endif %}">Export weekly CSV</a>
+    </form>
+</section>
+
+<section class="report-grid">
+    <article class="panel">
+        <div class="panel-header">
+            <h2>Daily report</h2>
+            <span>{{ daily_report.date }}</span>
+        </div>
+        <div class="task-stack">
+            {% for item in daily_report.rows %}
+                <div class="task-row static report-row">
+                    <div>
+                        <strong>{{ item.task_title }}</strong>
+                        <p>{{ item.user_name }}</p>
+                    </div>
+                    <span class="badge">{{ item.duration }}</span>
+                </div>
+            {% empty %}
+                <p class="empty-state">No entries for today.</p>
+            {% endfor %}
+        </div>
+    </article>
+
+    <article class="panel">
+        <div class="panel-header">
+            <h2>Weekly report</h2>
+            <span>{{ weekly_report.week_start }} - {{ weekly_report.week_end }}</span>
+        </div>
+        <div class="mini-chart">
+            {% for day in weekly_report.days %}
+                <div class="chart-row">
+                    <span>{{ day.date }}</span>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width:{{ day.percent }}%"></div>
+                    </div>
+                    <strong>{{ day.duration }}</strong>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="report-total">
+            <span>Total</span>
+            <strong>{{ weekly_report.total_duration }}</strong>
+        </div>
+    </article>
+</section>
+{% endblock %}

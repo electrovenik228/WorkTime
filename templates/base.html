@@ -1,0 +1,83 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}WorkTime{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body class="{% if request.user.is_authenticated %}app-body{% else %}auth-body{% endif %}">
+    <div class="shell">
+        {% if request.user.is_authenticated %}
+            <button class="mobile-nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="app-sidebar">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="sidebar-backdrop" data-nav-backdrop></div>
+            <aside class="sidebar" id="app-sidebar">
+                <div class="sidebar-head">
+                    <a class="brand" href="{% url 'dashboard' %}">WorkTime</a>
+                    <span class="brand-mark">Track</span>
+                </div>
+                <nav class="nav">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}is-active{% endif %}" href="{% url 'dashboard' %}">
+                        <span>Dashboard</span>
+                        <small>Overview</small>
+                    </a>
+                    <a class="nav-link {% if request.resolver_match.url_name == 'task-list' or request.resolver_match.url_name == 'task-detail' %}is-active{% endif %}" href="{% url 'task-list' %}">
+                        <span>Tasks</span>
+                        <small>Queue and tracking</small>
+                    </a>
+                    <a class="nav-link {% if request.resolver_match.url_name == 'reports' %}is-active{% endif %}" href="{% url 'reports' %}">
+                        <span>Reports</span>
+                        <small>Daily and weekly</small>
+                    </a>
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button class="nav-button" type="submit">Logout</button>
+                    </form>
+                </nav>
+                <div class="sidebar-card">
+                    <div class="eyebrow">Signed in as</div>
+                    <strong>{{ request.user.username }}</strong>
+                    <span>{{ request.user.get_role_display }}</span>
+                </div>
+            </aside>
+        {% endif %}
+        <main class="main {% if not request.user.is_authenticated %}main-auth{% endif %}">
+            {% if request.user.is_authenticated %}
+                <header class="mobile-topbar">
+                    <div>
+                        <span class="eyebrow">Workspace</span>
+                        <strong>{{ request.user.username }}</strong>
+                    </div>
+                    <span class="topbar-role">{{ request.user.get_role_display }}</span>
+                </header>
+            {% endif %}
+            {% if global_active_entry %}
+                <div class="global-timer" data-start-time="{{ global_active_entry.start_time|date:'c' }}">
+                    <div>
+                        <span class="eyebrow">Now tracking</span>
+                        <strong>{{ global_active_entry.task.title }}</strong>
+                    </div>
+                    <div class="global-timer-right">
+                        <span class="timer-inline" data-timer-display>{{ global_active_entry.duration }}</span>
+                        <button class="button danger timer-action" data-action="stop" data-task-id="{{ global_active_entry.task_id }}">Stop</button>
+                    </div>
+                </div>
+            {% endif %}
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div class="message {{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    <script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>
