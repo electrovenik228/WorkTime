@@ -27,7 +27,7 @@ def test_register_returns_jwt_tokens():
 
 
 @pytest.mark.django_db
-def test_logout_page_allows_get_and_redirects_to_login(client):
+def test_logout_post_redirects_to_login(client):
     user = User.objects.create_user(
         username="bob",
         email="bob@example.com",
@@ -36,7 +36,22 @@ def test_logout_page_allows_get_and_redirects_to_login(client):
     )
     client.force_login(user)
 
-    response = client.get(reverse("logout"))
+    response = client.post(reverse("logout"))
 
     assert response.status_code == 302
     assert response.url == reverse("login")
+
+
+@pytest.mark.django_db
+def test_logout_get_not_allowed(client):
+    user = User.objects.create_user(
+        username="carol",
+        email="carol@example.com",
+        password="strongpass123",
+        role=User.Roles.EMPLOYEE,
+    )
+    client.force_login(user)
+
+    response = client.get(reverse("logout"))
+
+    assert response.status_code == 405

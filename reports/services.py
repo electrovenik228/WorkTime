@@ -8,12 +8,12 @@ from users.models import User
 from tracking.services import format_duration
 
 
-def _resolve_target_user(request_user, user_id=None):
+def resolve_target_user(request_user, user_id=None):
     if request_user.role != User.Roles.MANAGER:
         return request_user
     if not user_id:
         return None
-    return request_user.__class__.objects.filter(pk=user_id).first() or request_user
+    return request_user.__class__.objects.filter(pk=user_id).first()
 
 
 def _entries_for_user(user, target_user=None):

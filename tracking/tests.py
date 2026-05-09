@@ -2,32 +2,21 @@ import pytest
 from rest_framework.test import APIClient
 
 from tasks.models import Task
-from users.models import User
 
 from .models import TimeEntry
 from .services import ActiveTimerExistsError, start_timer
 
 
 @pytest.fixture
-def employee():
-    return User.objects.create_user(
-        username="timer-user",
-        email="timer@example.com",
-        password="strongpass123",
-        role=User.Roles.EMPLOYEE,
-    )
-
-
-@pytest.fixture
-def tasks(employee):
+def two_tasks(employee):
     first = Task.objects.create(title="Task 1", description="x", created_by=employee, assigned_to=employee)
     second = Task.objects.create(title="Task 2", description="y", created_by=employee, assigned_to=employee)
     return first, second
 
 
 @pytest.mark.django_db
-def test_only_one_active_timer_allowed(employee, tasks):
-    first, second = tasks
+def test_only_one_active_timer_allowed(employee, two_tasks):
+    first, second = two_tasks
     start_timer(user=employee, task=first)
 
     with pytest.raises(ActiveTimerExistsError):
@@ -35,8 +24,8 @@ def test_only_one_active_timer_allowed(employee, tasks):
 
 
 @pytest.mark.django_db
-def test_restarting_same_task_returns_existing_active_entry(employee, tasks):
-    first, _ = tasks
+def test_restarting_same_task_returns_existing_active_entry(employee, two_tasks):
+    first, _ = two_tasks
 
     entry = start_timer(user=employee, task=first)
     repeated = start_timer(user=employee, task=first)
@@ -46,8 +35,8 @@ def test_restarting_same_task_returns_existing_active_entry(employee, tasks):
 
 
 @pytest.mark.django_db
-def test_start_and_stop_timer_api(employee, tasks):
-    first, _ = tasks
+def test_start_and_stop_timer_api(employee, two_tasks):
+    first, _ = two_tasks
     client = APIClient()
     client.force_authenticate(user=employee)
 
@@ -61,8 +50,8 @@ def test_start_and_stop_timer_api(employee, tasks):
 
 
 @pytest.mark.django_db
-def test_daily_report_contains_logged_task(employee, tasks):
-    first, _ = tasks
+def test_daily_report_contains_logged_task(employee, two_tasks):
+    first, _ = two_tasks
     client = APIClient()
     client.force_authenticate(user=employee)
 

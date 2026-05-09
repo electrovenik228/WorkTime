@@ -8,13 +8,13 @@ from rest_framework.views import APIView
 
 from users.models import User
 
-from .services import build_daily_report, build_weekly_report, parse_report_date, _resolve_target_user
+from .services import build_daily_report, build_weekly_report, parse_report_date, resolve_target_user
 
 
 class ReportFilterMixin:
     def get_filter_payload(self):
         date_value = parse_report_date(self.request.GET.get("date"))
-        target_user = _resolve_target_user(self.request.user, self.request.GET.get("user_id"))
+        target_user = resolve_target_user(self.request.user, self.request.GET.get("user_id"))
         return {"date_value": date_value, "target_user": target_user}
 
 
