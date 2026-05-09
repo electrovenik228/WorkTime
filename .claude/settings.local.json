@@ -7,7 +7,8 @@
       "Bash(python -m pytest --tb=short -q)",
       "Bash(wsl -d Ubuntu-24.04 -e bash -c \"cd /home/aman/WorkTime && source venv/bin/activate && python -m pytest --tb=short -q 2>&1\")",
       "Bash(wsl -d Ubuntu-24.04 -e bash -c \"cat /home/aman/WorkTime/.gitignore 2>/dev/null | grep env || echo 'no gitignore or no env entry'\")",
-      "Bash(wsl -d Ubuntu-24.04 -e bash -c \"ls /home/aman/WorkTime/.env 2>/dev/null && echo exists || echo missing\")"
+      "Bash(wsl -d Ubuntu-24.04 -e bash -c \"ls /home/aman/WorkTime/.env 2>/dev/null && echo exists || echo missing\")",
+      "Bash(grep -i whitenoise \"//wsl.localhost/Ubuntu-24.04/home/aman/WorkTime/requirements.txt\")"
     ]
   }
 }
